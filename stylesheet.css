@@ -1,7 +1,18 @@
 body {
-	background-color: #C4E1FA
+	background-color: #C4E1FA;
+	padding-right: 20%;
+	padding-left: 20%;
+	padding-top: 3%;
+	padding-bottom: 10%;
 }
 
 .center {
 	text-align: center;
+}
+
+#indexHeader {
+	border-style: double;
+	border-color: #D4AAFF;
+	padding-top: 1%;
+	padding-bottom: 1%;
 }
