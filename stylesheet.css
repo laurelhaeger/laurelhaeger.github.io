@@ -24,3 +24,7 @@ body {
 .italic {
 	font-style: italic;
 }
+
+.copperplate {
+	font-family: Copperplate, "Copperplate Gothic Light", fantasy;
+}
