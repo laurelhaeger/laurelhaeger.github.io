@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script lang="javascript" src="js/jquery-3.1.0.min.js"></script>
+    <script lang="javascript" src="js/d3.v4.min.js"></script>
+    <script lang="javascript" src="js/structures.js"></script>
+    <script lang="javascript" src="js/data_input.js"></script>
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Arvo"/>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <title>Star Power in Major League Baseball</title>
+    <div class='headers'>
+        <h1>The Relationship Between Star Power and Team Success in Major League Baseball</h1>
+        <h4>Data from Lahman's Baseball Database</h4>
+    </div>
+    <div class='left-bar'>
+        <div class='control-box'>
+            <section>Choose Year:</section>
+            <div id='year-dropdown'></div>
+            <br>
+            <section>Choose League:</section>
+            <div id='league-dropdown'></div>
+            <br>
+            <section>Choose Division:</section>
+            <div id='div-dropdown'></div>
+            <div id='info'></div>
+        </div>
+    </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class='modal-body'></div>
+        </div>
+    </div>
+    <div class='display'>
+        <div id='vis-container'></div>
+        <div id='table-info'></div>
+    </div>
+    <script>
+
+        var teamsMap = {};
+        var yearsMap = {};
+        var playersMap = {};
+        var allTeams = [];
+        var startYear = "2016"
+
+        d3.queue()
+            .defer(d3.csv, 'baseballdatabank-master/core/AllstarFull.csv')
+            .defer(d3.csv, 'baseballdatabank-master/core/Teams.csv')
+            .defer(d3.csv, 'baseballdatabank-master/core/Salaries.csv')
+            .defer(d3.csv, 'baseballdatabank-master/core/Batting.csv')
+            .defer(d3.csv, 'baseballdatabank-master/core/Pitching.csv')
+            .defer(d3.csv, 'baseballdatabank-master/core/People.csv')
+            .await(ready);
+
+        function ready(error, allstars, teams, salaries, batting, pitching, players) {
+            if (error) throw error;
+            populateMaps(allstars, teams, salaries, batting, pitching, players);
+            findStarPlayers();
+            findSuccess();
+
+            var currYear = startYear;
+            var currLeague = "All"
+            var currDiv = "All";
+            var instructions = "This display shows the correlation between collective team star power and team success calculated using data collected from 1985 to 2016.<br><br><u><b>Star Power</b></u>: The star power for a specific team was calculated based on the total star power for each member of their team. Players were identified as 'stars' given All-Star status, a salary in the top 5% of the league, a high wOBA value, or a low ERA for pitchers. Each metric was associated with a different value according to the strength of their impact.<br><ul><li><b>All-Star Status</b>: Given that all teams must have at least one All-Star, the first All-Star for any given team was weighted less than subsequent players. Additionally, starting players were weighted more heavily.</li><br><li><b>Salary</b>: For each year, the top 5% of salaries across all players were calculated and under the assumption that teams pay top players more highly, they were given star status. This category was not weighted as heavily as others as its possible to overpay a player and see them underperform.</li><br><li><b>wOBA</b>: Values for each player were calculated by the 2018 FanGraphs formula. Values over 0.370 were considered great, and values over 0.400 were considered excellent. Players in these categories were given different weightings.</li><br><li><b>ERA</b>: To be considered an elite pitcher, players were required to have pitched more than 100 innings. They were then put into three top tier categories given ERAs less than 3.40, 3.00, and 2.50. Just as with wOBA, better ERAs yielded a higher inidividual star power.</li></ul><u><b>Team Success</b></u>: The success of a team was a weighted value influenced by regular season performance, ranking, and playoff wins. Collectively, a strong regularly season was weighted more highly than the other variables.<br><br><b>Note</b>: Several variables were not included in the calculations for simplicity including, but not limited to, injuries, influential relievers, trades, and home field advantage.";
+
+            /* Modal */
+            var modal = document.getElementById("myModal");
+            var span = document.getElementsByClassName("close")[0];
+            span.onclick = () => { modal.style.display = "none"; }
+
+            //Close modal when the user clicks anywhere else on the page
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            function makeGraph(teams, year) {
+                var data = [];
+                var teamsKey;
+                for (i in allTeams) {
+                    imgKey = "images/" + allTeams[i] + ".png"
+                    if (teams.includes(allTeams[i])) {
+                        teamsKey = allTeams[i] + "_" + year;
+                        data.push({name: allTeams[i], x: teamsMap[teamsKey].starValue, 
+                        y: teamsMap[teamsKey].success, img: imgKey});
+                    } else {
+                        data.push({name: allTeams[i], x: 0, 
+                        y: 5, img: imgKey});
+                    }
+                    
+                }
+                console.log(teams);
+
+                var outerWidth  = $(window).width() * 0.7, 
+                    outerHeight = 450;    // includes margins
+
+                var margin = {top: 30, right: 20, bottom: 50, left: 80};   // clockwise as in CSS
+
+                var width = outerWidth - margin.left - margin.right,       
+                    height = outerHeight - margin.top - margin.bottom;     
+
+                document.body.style.margin="0px"; 
+
+                function xValue(d) { return d.x; }      
+                function yValue(d) { return d.y; }
+
+                var xScale = d3.scaleLinear()                
+                    .domain([0, d3.max(data, function(d) { return d.x;}) + 2])
+                    .range([0,width])
+                    .nice();
+
+                var yScale = d3.scaleLinear()                
+                    .domain([d3.min(data, function(d) { return +d.y;}) - 5, 
+                            (d3.max(data, function(d) { return +d.y;}) + 5)])
+                    .range([height,0])
+                    .nice();                  
+
+                var xAxis = d3.axisBottom()
+                    .ticks(5)
+                    .scale(xScale);                        
+
+                var yAxis = d3.axisLeft()                
+                    .ticks(8)
+                    .scale(yScale);
+
+                var svg = d3.select("#vis-container").append("svg")
+                    .attr("width",  outerWidth)
+                    .attr("height", outerHeight);        
+
+                var g = svg.append("g")                  
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+
+                var gY = g.append("g")                            
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+                var gX = g.append("g")                            
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")  
+                    .call(xAxis);
+
+                var tooltip = d3.select("body").append("div") 
+                    // .attr("class", "tooltip")       
+                    .style("margin", "15px")
+                    .style("background-color","#4A4645")
+                    .style("color", "white")
+                    .style("box-shadow", "0 2px 4px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12)")
+                    .style("border","solid 0.5px")
+                    .style("border-radius","5px")
+                    .style("padding","10px 10px 10px 10px")
+                    .style("position", "absolute")
+                    .style("opacity", 0)
+                    .style("font-size", "12px");
+
+                g.append("text")                         
+                    .attr("class", "x label")
+                    .attr("text-anchor", "end")
+                    .attr("x", width/2)
+                    .attr("y", height + 2*margin.bottom/3 + 6)
+                    .text("Team Star Power");
+
+                g.append("text")                         
+                    .attr("class", "x label")
+                    .attr("text-anchor", "middle")
+                    .attr("x", -height/2)
+                    .attr("y", -6 - margin.left/3)
+                    .attr("dy", "-.75em")
+                    .attr("transform", "rotate(-90)")
+                    .text("Weighted Team Success");
+
+                g.selectAll("point")
+                    .data(data)
+                    .enter()
+                    .append("image")
+                    .attr("xlink:href", function(d){ return d.img })
+                    .attr("x", function(d){ return (xScale(d.x) - 15) })
+                    .attr("y", function(d){ return (yScale(d.y) - 15) })
+                    .attr("width", 30)
+                    .attr("height", 30)
+                    .attr("opacity", function(d) {
+                        if (teams.includes(d.name)) {return 1}
+                        else {return 0}});
+
+                g.selectAll("image")
+                    .on("mouseover", graphMouseOver)          
+                    .on("mouseout", graphMouseOut)
+                    .on("mousemove", graphMouseMove)
+                    .on("click", clicked);
+
+                function graphMouseOver(d) {
+                    d3.select(this).attr("width", 40);
+                    d3.select(this).attr("height", 40);
+                    teamsKey = d.name + "_" + currYear;
+                    if (d3.select(this).attr("opacity") == 1) {
+                        d3.select(this).style("cursor", "pointer");
+                        tooltip.transition()    
+                            .duration(200)    
+                            .style("opacity", .9);  
+                        tooltip.html(teamsMap[teamsKey].fullName + "<br> League: " 
+                            + teamsMap[teamsKey].leagueID + "<br>Division: " 
+                            + teamsMap[teamsKey].divID + "<br>Record: " 
+                            + teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses);
+                    } 
+                }
+
+                function graphMouseOut(d) {
+                    d3.select(this).attr("width", 30);
+                    d3.select(this).attr("height", 30); 
+                    if (d3.select(this).attr("opacity") == 1) {
+                        tooltip.transition()    
+                            .duration(500)    
+                            .style("opacity", 0); 
+                    }
+                }
+
+                function graphMouseMove(d) {
+                    tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+                }
+
+                var info_icon = d3.select("#info")
+                    .html("<img class='info-icon' src ='images/info.png' />")
+                    .on('click',showInstructionModal);
+
+                // opens the modal and fills it with instructions and info
+                function showInstructionModal() {
+                    modal.style.display = "block";
+                    var modalBody = d3.select('.modal-body');
+                    modalBody.selectAll('*').remove();
+                    modalBody.append('div')
+                        .attr('class','text modal-title')
+                        .html(instructions)
+                        .enter();
+                }
+
+                function updateGraph(teams, year) {
+                    var newData = [];
+                    console.log(currYear);
+                    console.log(teams);
+                    for (i in allTeams) {
+                        if (teams.includes(allTeams[i])) {
+                            teamsKey = allTeams[i] + "_" + year;
+                            data[i].x = teamsMap[teamsKey].starValue;
+                            data[i].y = teamsMap[teamsKey].success;
+                        } else {
+                            data[i].x = 0;
+                            data[i].y = 5;
+                        }
+                        
+                    }
+                    console.log(data);
+
+                    var new_xScale = d3.scaleLinear()                
+                                        .domain([0, d3.max(data, function(d) { return d.x;}) + 2])
+                                        .range([0,width])
+                                        .nice();
+
+                    var new_yScale = d3.scaleLinear()                
+                                        .domain([d3.min(data, function(d) { return +d.y;}) - 5, 
+                                                (d3.max(data, function(d) { return +d.y;}) + 5)])
+                                        .range([height,0])
+                                        .nice(); 
+
+                    gX.transition().duration(1500)
+                        .call(xAxis.scale(new_xScale));
+                    gY.transition().duration(1500)
+                        .call(yAxis.scale(new_yScale));
+
+                    g.selectAll("image")                  
+                        .transition()
+                        .duration(1500)
+                        .attr("x", function(d){ return (new_xScale(d.x) - 15) })
+                        .attr("y", function(d){ return (new_yScale(d.y) - 15) })
+                        .attr("opacity", function(d) {
+                                if (teams.includes(d.name)) { return 1}
+                                else {return 0}});
+                }
+
+                function yearDropdownChange() {
+                    currYear = d3.select(this).property('value');
+                    console.log(currYear)
+                    dropdownChange();
+                };
+
+                function leagueDropdownChange() {
+                    currLeague = d3.select(this).property('value');
+                    dropdownChange();
+                };
+
+                function divDropdownChange() {
+                    currDiv= d3.select(this).property('value');
+                    dropdownChange();
+                }
+
+                function dropdownChange() {
+                    var newData = [],
+                        teams = yearsMap[currYear].teams;
+                    for (i in teams) {
+                        teamsKey = teams[i] + "_" + currYear;
+                        if ((currLeague == "All" || teamsMap[teamsKey].leagueID == currLeague) && 
+                            (currDiv == "All" || teamsMap[teamsKey].divID == currDiv)) {
+                            newData.push(teams[i]);
+                        }
+                    }
+                    updateGraph(newData, currYear);
+                }
+
+                var years = Object.keys(yearsMap).sort().reverse();
+                var leagues = ["All", "AL", "NL"];
+                var divisions = ["All", "E", "C", "W"];
+
+                var yearDropdown = d3.select("#year-dropdown")
+                    .insert("select", "svg")
+                    .on("change", yearDropdownChange);
+
+                var leagueDropdown = d3.select("#league-dropdown")
+                    .insert("select", "svg")
+                    .on("change", leagueDropdownChange);
+
+                var divDropdown = d3.select("#div-dropdown")
+                    .insert("select", "svg")
+                    .on("change", divDropdownChange);
+
+                yearDropdown.selectAll("option")
+                    .data(years)
+                    .enter().append("option")
+                    .attr("value", function (d) { return d; })
+                    .text(function (d) { return d });
+
+                leagueDropdown.selectAll("option")
+                    .data(leagues)
+                    .enter().append("option")
+                    .attr("value", function (d) { return d; })
+                    .text(function (d) { return d });
+
+                divDropdown.selectAll("option")
+                    .data(divisions)
+                    .enter().append("option")
+                    .attr("value", function (d) { return d; })
+                    .text(function (d) { return d });
+
+                var table = d3.select('#table-info')
+                    .append('table')
+                    .attr("width",  (outerWidth - margin.right));
+
+                var thead = table.append('thead')
+                var tbody = table.append('tbody');
+                var columns = ["Year", "Team Name", "League", "Division", "Record", "Star Players"]
+                
+                thead.append('tr')
+                    .selectAll('th')
+                    .data(columns).enter()
+                    .append('th')
+                    .text(function (column) { return column; })
+                    .attr("style", "padding: 10px;");
+
+                var tableData = [];
+                var dataHelper = [];
+
+                function clicked(d) {
+                    teamsKey = d.name + "_" + currYear;
+                    keys = Object.keys(teamsMap[teamsKey].topPlayers)
+                    var starPlayers = "";
+                    for (i in keys) {
+                        starPlayers += (playersMap[keys[i]].firstName + " " + 
+                                        playersMap[keys[i]].lastName);
+                        if (i != keys.length - 1) {
+                            starPlayers += ", ";
+                        }
+                    }
+
+                    console.log(teamsMap[teamsKey].starValue);
+
+                    input = {"Year": currYear, "TeamName": teamsMap[teamsKey].fullName,
+                            "League": teamsMap[teamsKey].leagueID, "Division": teamsMap[teamsKey].divID,
+                            "Record": teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses,
+                            "StarPlayers": starPlayers};
+
+                    var repeat = false;
+                    for (var i in tableData) {
+                        if (tableData[i].Year == input.Year && tableData[i].TeamName == input.TeamName) {
+                            repeat = true; 
+                        }
+                    }
+
+                    if (!repeat) {
+                        tableData.push(input);
+                        dataHelper.push(d);
+                    }
+                    
+                    // create a row for each object in the data
+                    var rows = tbody.selectAll('tr')
+                      .data(tableData)
+                      .enter()
+                      .append('tr')
+                      .on("mouseover", function(d) {
+                                d3.select(this).style("cursor", "pointer")
+                                tooltip.transition()    
+                                    .duration(200)    
+                                    .style("opacity", .9);  
+                                tooltip.html("Click to Remove");})
+                      .on("mouseout", function(d) {
+                                tooltip.transition()    
+                                    .duration(500)    
+                                    .style("opacity", 0);})
+                      .on("mousemove", graphMouseMove)
+                      .on("click", function() {tableData.splice(dataHelper.indexOf(d), 1);
+                                            dataHelper.splice(dataHelper.indexOf(d), 1);
+                                            d3.select(this).remove();});
+
+                    // create a cell in each row for each column
+                    var cells = rows.selectAll('td')
+                      .data(function (row) {
+                        return columns.map(function (column) {
+                            columnName = column;
+                            if (column == "Team Name") {
+                                columnName = "TeamName"
+                            } else if (column == "Star Players") {
+                                columnName = "StarPlayers"
+                            }
+                          return {column: columnName, value: row[columnName]};
+                        });
+                      })
+                      .enter()
+                      .append('td')
+                        .text(function (d) { return d.value; });
+
+                    return table;
+                }
+            };
+
+            var initialData = yearsMap[startYear].teams;
+            makeGraph(initialData, startYear);
+        }
+
+        function populateMaps(allstars, teams, salaries, batting, pitching, players) {
+            populateTeams(teams);
+            populatePlayers(players);
+            populatePitching(pitching);
+            populateBatting(batting);
+            populateSalaries(salaries);
+            populateAllStars(allstars);
+        }
+
+        function findSuccess() {
+            for (var year in yearsMap) {
+                var teams = yearsMap[year].teams;
+                for (var i in teams) {
+                    teamsKey = teams[i] + "_" + year;
+                    gamesPlayed = teamsMap[teamsKey].games;
+                    pointsAboveEven = teamsMap[teamsKey].wins - teamsMap[teamsKey].loses;
+                    points = parseFloat((pointsAboveEven/5).toFixed(2));
+                    points += (7 - parseInt(teamsMap[teamsKey].divRank));
+                    if (teamsMap[teamsKey].DivWin == "Y") {
+                        points += 1
+                    }
+                    if (teamsMap[teamsKey].WCWin == "Y") {
+                        points += 1
+                    }
+                    if (teamsMap[teamsKey].leagueWin == "Y") {
+                        points += 1
+                    }
+                    if (teamsMap[teamsKey].WSWin == "Y") {
+                        points += 3
+                    }
+                    teamsMap[teamsKey].success = points.toFixed(2);
+                }
+            }
+        }
+
+        // current season star power index vs last five years
+        // rookies can't be a star 
+        // TODO: adjust point values for different skilllevels?
+        // TODO: fix undefined value for name push
+        function findStarPlayers() {
+            for (var year in yearsMap) {
+                var teams = yearsMap[year].teams;
+                var allYearPlayers = [];
+                for (var i in teams) {
+                    teamsKey = teams[i] + "_" + year;
+                    players = Object.keys(teamsMap[teamsKey].players);
+                    salaries = Object.values(teamsMap[teamsKey].players);
+                    allStars = teamsMap[teamsKey].allStars;
+                    startingAllStars = teamsMap[teamsKey].startingAllStars;
+                    for (var i in players) {
+                        if (playersMap[players[i]].years[year].wOBA > 0.400 && 
+                            playersMap[players[i]].years[year].AB > 100) {
+                            teamsMap[teamsKey].starValue += 3.5;
+                            teamsMap[teamsKey].topPlayers[players[i]] = 3;
+                        } else if (playersMap[players[i]].years[year].wOBA > 0.370 && 
+                            playersMap[players[i]].years[year].AB > 100) {
+                            teamsMap[teamsKey].starValue += 2;
+                            teamsMap[teamsKey].topPlayers[players[i]] = 1.5;
+                        }
+
+                        if (playersMap[players[i]].years[year].pitcher = true && 
+                            playersMap[players[i]].years[year].ERA < 2.50 && 
+                            playersMap[players[i]].years[year].IP > 100) {
+                            teamsMap[teamsKey].starValue += 3;
+                            teamsMap[teamsKey].topPlayers[players[i]] = 3;
+                            // console.log("excellent");
+                        } else if (playersMap[players[i]].years[year].pitcher = true && 
+                            playersMap[players[i]].years[year].ERA < 3.00 && 
+                            playersMap[players[i]].years[year].IP > 100) {
+                            teamsMap[teamsKey].starValue += 2.25;
+                            teamsMap[teamsKey].topPlayers[players[i]] = 2.25;
+                            // console.log("great");
+                        } else if (playersMap[players[i]].years[year].pitcher = true && 
+                            playersMap[players[i]].years[year].ERA < 3.40 && 
+                            playersMap[players[i]].years[year].IP > 100) {
+                            teamsMap[teamsKey].starValue += 1.5;
+                            teamsMap[teamsKey].topPlayers[players[i]] = 1.5;
+                            // console.log("good");
+                        }
+                        allYearPlayers.push({player: players[i], salary: salaries[i], team: teamsKey});
+                    }
+
+                    // every team is required at least one allstar, so first one
+                    // counts for less than others
+                    teamsMap[teamsKey].starValue += 0.10;
+                    teamsMap[teamsKey].starValue += (0.25 * (allStars.length - 1));
+                    teamsMap[teamsKey].starValue += (0.35 * startingAllStars.length);
+
+                    teamsMap[teamsKey].starValue = parseFloat((teamsMap[teamsKey].starValue).toFixed(2));
+
+                    for (i in allStars) {
+                        teamsMap[teamsKey].topPlayers[allStars[i]] = 0.1;
+                    }
+                }
+                findTopFivePercent(allYearPlayers)
+            }
+        }
+
+        function findTopFivePercent(map) {
+            var total = map.length;
+            var topFive = (total/100) * 5;
+
+            map.sort(function(a, b) {
+                return b.salary - a.salary;
+            });
+
+            for (let i = 0; i < topFive; ++i) {
+                teamsMap[map[i].team].topPlayers[map[i].player] = 1;
+                teamsMap[map[i].team].starValue += 1.5;
+            }
+        }
+    </script>
+</body>
+</html>

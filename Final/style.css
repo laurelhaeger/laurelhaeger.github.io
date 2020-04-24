@@ -1,0 +1,134 @@
+body {
+    font-family: Arvo
+    /*font-size: 16px;*/
+}
+
+html, body { 
+    height: 100%; 
+}
+
+h1 {
+    /*padding-top: 30px;*/
+    text-align: center;  
+    font-family: Arvo; 
+    font-size: 24px; 
+    font-weight: bolder;
+    background-color: #C6E6FE;
+    margin-color: #C6E6FE;
+}
+
+h4 {
+    text-align: center;
+    font-style: italic;
+    font-family: Arvo; 
+    font-size: 16px; 
+    background-color: #C6E6FE;
+    /*padding-bottom: 30px;*/
+    border-color: #C6E6FE;
+}
+
+.headers {
+    background-color: #C6E6FE;
+    padding: 30px 0px 20px 0px;
+}
+
+.left-bar {
+    min-height: 100%;
+    width: 20%;
+    background-color: #10456D;
+    float: left;
+}
+
+.control-box {
+    padding: 15px;
+    margin: auto;
+    margin-top: 50px;
+    border: 2px solid #B2ACAA;
+    max-width: 70%;
+    height: 200px;
+    color: white;
+    border-radius: 4px;
+}
+
+.display {
+    height: 600px;
+    overflow-y: auto;
+}
+
+.info-icon {
+    float: right;
+    padding-top: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Modal */
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%;
+  min-height: 50px;
+  max-height: 500px;
+  overflow-y: scroll;
+  text-align: left;
+  font-size: 18px;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+th {
+    text-align: center;
+    font-weight: bold;
+    padding-left: 5px;
+    padding-right: 5px;
+    background: #C6E6FE;
+}
+
+table {
+    text-align: center;
+    margin-top: 20px;
+    padding-left: 80px;
+    font-family: Arvo;
+}
+
+/* Zebra striping */
+tr:nth-of-type(odd) { 
+    background: #eee; 
+}
+
+tr {
+    padding-left: 5px;
+    padding-right: 5px;
+}
