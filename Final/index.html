@@ -178,8 +178,8 @@
                     .attr("xlink:href", function(d){ return d.img })
                     .attr("x", function(d){ return (xScale(d.x) - 15) })
                     .attr("y", function(d){ return (yScale(d.y) - 15) })
-                    .attr("width", 30)
-                    .attr("height", 30)
+                    .attr("width", 40)
+                    .attr("height", 40)
                     .attr("opacity", function(d) {
                         if (teams.includes(d.name)) {return 1}
                         else {return 0}});
@@ -191,8 +191,8 @@
                     .on("click", clicked);
 
                 function graphMouseOver(d) {
-                    d3.select(this).attr("width", 40);
-                    d3.select(this).attr("height", 40);
+                    d3.select(this).attr("width", 50);
+                    d3.select(this).attr("height", 50);
                     teamsKey = d.name + "_" + currYear;
                     if (d3.select(this).attr("opacity") == 1) {
                         d3.select(this).style("cursor", "pointer");
@@ -207,8 +207,8 @@
                 }
 
                 function graphMouseOut(d) {
-                    d3.select(this).attr("width", 30);
-                    d3.select(this).attr("height", 30); 
+                    d3.select(this).attr("width", 40);
+                    d3.select(this).attr("height", 40); 
                     if (d3.select(this).attr("opacity") == 1) {
                         tooltip.transition()    
                             .duration(500)    
