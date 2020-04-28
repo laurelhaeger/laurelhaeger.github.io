@@ -16,21 +16,21 @@
     </div>
     <div class='left-bar'>
         <div class='control-box'>
-            <section>Choose Year:<br>
+            <section>Year:<br>
                 <div class="select">
                     <select name="dropdown" id='year-dropdown'>
                     </select>
                 </div>
             </section>
             <br>
-            <section>Choose League:<br>
+            <section>League:<br>
                 <div class="select">
                     <select name="dropdown" id='league-dropdown'>
                     </select>
                 </div>
             </section>
             <br>
-            <section>Choose Division:<br>
+            <section>Division:<br>
                 <div class="select">
                     <select name="dropdown" id='div-dropdown'>
                     </select>
@@ -75,6 +75,11 @@
             var currYear = startYear;
             var currLeague = "All"
             var currDiv = "All";
+            var years = Object.keys(yearsMap).sort().reverse();
+            var leagues = ["All", "AL", "NL"];
+            var leagues_full = ["All", "American", "National"];
+            var divisions = ["All", "E", "C", "W"];
+            var divisions_full = ["All", "East", "Central", "West"];
             var instructions = "This display shows the correlation between collective team star power and team success calculated using data collected from 1985 to 2016. Clicking on a team in the graph will add it to the list of teams in the table below. <br><br><u><b>Star Power</b></u>: The star power for a specific team was calculated based on the total star power for each member of their team. Players were identified as 'stars' given All-Star status, a salary in the top 5% of the league, a high wOBA value, or a low ERA for pitchers. Each metric was associated with a different value according to the strength of their impact.<br><ul><li><b>All-Star Status</b>: Given that all teams must have at least one All-Star, the first All-Star for any given team was weighted less than subsequent players. Additionally, starting players were weighted more heavily.</li><br><li><b>Salary</b>: For each year, the top 5% of salaries across all players were calculated and under the assumption that teams pay top players more highly, they were given star status. This category was not weighted as heavily as others as it's possible to overpay a player and see them underperform.</li><br><li><b>wOBA</b>: Values for each player were calculated by the 2018 FanGraphs formula. Values over 0.370 were considered great, and values over 0.400 were considered excellent. Players in these categories were given different weightings.</li><br><li><b>ERA</b>: To be considered an elite pitcher, players were required to have pitched more than 100 innings. They were then put into three top tier categories given ERAs less than 3.40, 3.00, and 2.50. Just as with wOBA, better ERAs yielded a higher inidividual star power.</li></ul><u><b>Team Success</b></u>: The success of a team was a weighted value influenced by regular season performance, ranking, and playoff wins. Collectively, a strong regular season was weighted more highly than the other variables.<br><br><b>Note</b>: Several variables were not included in the calculations for simplicity including, but not limited to, injuries, influential relievers, trades, and home field advantage.";
 
             /* Modal */
@@ -212,8 +217,8 @@
                             .duration(200)    
                             .style("opacity", .9);  
                         tooltip.html(teamsMap[teamsKey].fullName + "<br> League: " 
-                            + teamsMap[teamsKey].leagueID + "<br>Division: " 
-                            + teamsMap[teamsKey].divID + "<br>Record: " 
+                            + leagues_full[leagues.indexOf(teamsMap[teamsKey].leagueID)] + "<br>Division: " 
+                            + divisions_full[divisions.indexOf(teamsMap[teamsKey].divID)] + "<br>Record: " 
                             + teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses);
                     } 
                 }
@@ -236,7 +241,7 @@
                 }
 
                 var info_icon = d3.select("#info")
-                    .html("<img class='info-icon' src ='images/info.png' />")
+                    .html("<img class='info-icon' src ='images/info-white.png' />")
                     .on("mouseover", function(d) {d3.select(this).style("cursor", "pointer");})
                     .on('click',showInstructionModal);
 
@@ -323,10 +328,6 @@
                     updateGraph(newData, currYear);
                 }
 
-                var years = Object.keys(yearsMap).sort().reverse();
-                var leagues = ["All", "AL", "NL"];
-                var divisions = ["All", "E", "C", "W"];
-
                 var yearDropdown = d3.select("#year-dropdown")
                     .on("change", yearDropdownChange);
 
@@ -340,19 +341,19 @@
                     .data(years)
                     .enter().append("option")
                     .attr("value", function (d) { return d; })
-                    .text(function (d) { return d });
+                    .text(function (d) { return d; });
 
                 leagueDropdown.selectAll("option")
                     .data(leagues)
                     .enter().append("option")
                     .attr("value", function (d) { return d; })
-                    .text(function (d) { return d });
+                    .text(function (d, i) { return leagues_full[i]; });
 
                 divDropdown.selectAll("option")
                     .data(divisions)
                     .enter().append("option")
                     .attr("value", function (d) { return d; })
-                    .text(function (d) { return d });
+                    .text(function (d, i) { return divisions_full[i]; });
 
                 var table = d3.select('#table-info')
                     .append('table')
@@ -387,7 +388,8 @@
                     console.log(teamsMap[teamsKey].starValue);
 
                     input = {"Year": currYear, "TeamName": teamsMap[teamsKey].fullName,
-                            "League": teamsMap[teamsKey].leagueID, "Division": teamsMap[teamsKey].divID,
+                            "League": leagues_full[leagues.indexOf(teamsMap[teamsKey].leagueID)], 
+                            "Division": divisions_full[divisions.indexOf(teamsMap[teamsKey].divID)],
                             "Record": teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses,
                             "StarPlayers": starPlayers};
 
@@ -408,16 +410,7 @@
                       .data(tableData)
                       .enter()
                       .append('tr')
-                      .on("mouseover", function(d) {
-                                d3.select(this).style("cursor", "pointer")
-                                tooltip.transition()    
-                                    .duration(200)    
-                                    .style("opacity", .9);  
-                                tooltip.html("Click to Remove");})
-                      .on("mouseout", function(d) {
-                                tooltip.transition()    
-                                    .duration(500)    
-                                    .style("opacity", 0);})
+                      .on("mouseover", function(d) { d3.select(this).style("cursor", "pointer")})
                       .on("mousemove", graphMouseMove)
                       .on("click", function() {tableData.splice(dataHelper.indexOf(d), 1);
                                             dataHelper.splice(dataHelper.indexOf(d), 1);

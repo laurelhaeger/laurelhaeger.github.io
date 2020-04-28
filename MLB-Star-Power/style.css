@@ -13,8 +13,9 @@ h1 {
     font-family: Arvo; 
     font-size: 24px; 
     font-weight: bolder;
-    background-color: #C6E6FE;
-    margin-color: #C6E6FE;
+    color: white;
+    background-color: #10456D;
+    margin-color: #10456D;
 }
 
 h4 {
@@ -22,11 +23,16 @@ h4 {
     font-style: italic;
     font-family: Arvo; 
     font-size: 16px; 
-    background-color: #C6E6FE;
+    color: white;
+    background-color: #10456D;
     /*padding-bottom: 30px;*/
-    border-color: #C6E6FE;
+    border-color: #10456D;
 }
 
+.headers {
+    background-color: #10456D;
+    padding: 30px 0px 20px 0px;
+}
 
 select { 
     -webkit-appearance: none; 
@@ -34,7 +40,7 @@ select {
     -ms-appearance: none; 
     appearance: none; 
     outline: 0; 
-    background: #D8EBFA; 
+    background: white; 
     background-image: none; 
     border:1px solid black; 
     margin-top: 2px;
@@ -90,15 +96,10 @@ select::-ms-expand {
     transition: .25s all ease; 
 }
 
-.headers {
-    background-color: #C6E6FE;
-    padding: 30px 0px 20px 0px;
-}
-
 .left-bar {
     min-height: 100%;
     width: 20%;
-    background-color: #10456D;
+    background-color: #950023;
     float: left;
 }
 
@@ -106,7 +107,7 @@ select::-ms-expand {
     padding: 20px 20px 30px 20px;
     margin: auto;
     margin-top: 50px;
-    border: 2px solid #B2ACAA;
+    border: 2px solid white;
     max-width: 70%;
     /*height: 250px;*/
     color: white;
@@ -181,7 +182,8 @@ th {
     font-weight: bold;
     padding-left: 5px;
     padding-right: 5px;
-    background: #C6E6FE;
+    background: #10456D;
+    color: white;
 }
 
 table {
