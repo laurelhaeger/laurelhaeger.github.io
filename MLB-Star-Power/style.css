@@ -1,6 +1,5 @@
 body {
     font-family: Arvo
-    /*font-size: 16px;*/
 }
 
 html, body { 
@@ -8,7 +7,6 @@ html, body {
 }
 
 h1 {
-    /*padding-top: 30px;*/
     text-align: center;  
     font-family: Arvo; 
     font-size: 24px; 
@@ -25,7 +23,6 @@ h4 {
     font-size: 16px; 
     color: white;
     background-color: #10456D;
-    /*padding-bottom: 30px;*/
     border-color: #10456D;
 }
 
@@ -86,10 +83,10 @@ select::-ms-expand {
 } 
 
 .select:hover::after { 
-    color: #10456D; 
+    color: black; 
 } 
   
-/* For different browsers */
+/* for different browsers */
 .select::after { 
     -webkit-transition: .25s all ease; 
     -o-transition: .25s all ease; 
@@ -131,24 +128,20 @@ select::-ms-expand {
     height: 20px;
 }
 
-/* Modal */
-
-/* The Modal (background) */
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  padding-top: 100px; /* Location of the box */
+  display: none; 
+  position: fixed;
+  z-index: 1; 
+  padding-top: 100px; 
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; 
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4); 
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #fefefe;
   margin: auto;
@@ -162,7 +155,6 @@ select::-ms-expand {
   font-size: 18px;
 }
 
-/* The Close Button */
 .close {
   color: #aaaaaa;
   float: right;
@@ -170,7 +162,7 @@ select::-ms-expand {
   font-weight: bold;
 }
 
-.close:hover,
+.close:hover, 
 .close:focus {
   color: #000;
   text-decoration: none;
@@ -193,7 +185,7 @@ table {
     font-family: Arvo;
 }
 
-/* Zebra striping */
+/* zebra striping */
 tr:nth-of-type(odd) { 
     background: #eee; 
 }

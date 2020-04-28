@@ -11,7 +11,7 @@
 <body>
     <title>Star Power in Major League Baseball</title>
     <div class='headers'>
-        <h1>The Relationship Between Star Power and Team Success in Major League Baseball</h1>
+        <h1>The Relationship Between Star Power and Success in Major League Baseball</h1>
         <h4>Data from Lahman's Baseball Database</h4>
     </div>
     <div class='left-bar'>
@@ -39,7 +39,7 @@
             <div id='info'></div>
         </div>
     </div>
-    <div id="myModal" class="modal">
+    <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class='modal-body'></div>
@@ -80,20 +80,20 @@
             var leagues_full = ["All", "American", "National"];
             var divisions = ["All", "E", "C", "W"];
             var divisions_full = ["All", "East", "Central", "West"];
-            var instructions = "This display shows the correlation between collective team star power and team success calculated using data collected from 1985 to 2016. Clicking on a team in the graph will add it to the list of teams in the table below. <br><br><u><b>Star Power</b></u>: The star power for a specific team was calculated based on the total star power for each member of their team. Players were identified as 'stars' given All-Star status, a salary in the top 5% of the league, a high wOBA value, or a low ERA for pitchers. Each metric was associated with a different value according to the strength of their impact.<br><ul><li><b>All-Star Status</b>: Given that all teams must have at least one All-Star, the first All-Star for any given team was weighted less than subsequent players. Additionally, starting players were weighted more heavily.</li><br><li><b>Salary</b>: For each year, the top 5% of salaries across all players were calculated and under the assumption that teams pay top players more highly, they were given star status. This category was not weighted as heavily as others as it's possible to overpay a player and see them underperform.</li><br><li><b>wOBA</b>: Values for each player were calculated by the 2018 FanGraphs formula. Values over 0.370 were considered great, and values over 0.400 were considered excellent. Players in these categories were given different weightings.</li><br><li><b>ERA</b>: To be considered an elite pitcher, players were required to have pitched more than 100 innings. They were then put into three top tier categories given ERAs less than 3.40, 3.00, and 2.50. Just as with wOBA, better ERAs yielded a higher inidividual star power.</li></ul><u><b>Team Success</b></u>: The success of a team was a weighted value influenced by regular season performance, ranking, and playoff wins. Collectively, a strong regular season was weighted more highly than the other variables.<br><br><b>Note</b>: Several variables were not included in the calculations for simplicity including, but not limited to, injuries, influential relievers, trades, and home field advantage.";
+            var information = "This display shows the correlation between collective team star power and team success calculated using data collected from 1985 to 2016. Clicking on a team in the graph will add it to the list of teams in the table below. To remove a team from the table, simply click its corresponding data row. <br><br><u><b>Star Power</b></u>: The star power for a specific team was calculated based on the total star power for each member of their team. Players were identified as 'stars' given All-Star status, a salary in the top 5% of the league, a high wOBA value, or a low ERA for pitchers. Each metric was associated with a different value according to the strength of their impact.<br><ul><li><b>All-Star Status</b>: Given that all teams must have at least one All-Star, the first All-Star for any given team was weighted less than subsequent players. Additionally, starting players were weighted more heavily.</li><br><li><b>Salary</b>: For each year, the top 5% of salaries across all players were calculated and under the assumption that teams pay top players more highly, they were given star status. This category was not weighted as heavily as others as it's possible to overpay a player and see them underperform.</li><br><li><b>wOBA</b>: Values for each player were calculated by the 2018 FanGraphs formula. Values over 0.370 were considered great, and values over 0.400 were considered excellent. Players in these categories were given different weightings.</li><br><li><b>ERA</b>: To be considered an elite pitcher, players were required to have pitched more than 100 innings. They were then put into three top tier categories given ERAs less than 3.40, 3.00, and 2.50. Just as with wOBA, better ERAs yielded a higher inidividual star power.</li></ul><u><b>Team Success</b></u>: The success of a team was a weighted value influenced by regular season performance, ranking, and playoff wins. Collectively, a strong regular season was weighted more highly than the other variables.<br><br><b>Note</b>: Several variables were not included in the calculations for simplicity including, but not limited to, injuries, influential relievers, trades, and home field advantage.";
 
-            /* Modal */
-            var modal = document.getElementById("myModal");
+            var modal = document.getElementById("modal");
             var span = document.getElementsByClassName("close")[0];
             span.onclick = () => { modal.style.display = "none"; }
 
-            //Close modal when the user clicks anywhere else on the page
+            // close modal when user clicks outside of it
             window.onclick = (event) => {
                 if (event.target == modal) {
                     modal.style.display = "none";
                 }
             }
 
+            // makes the initial graph 
             function makeGraph(teams, year) {
                 var data = [];
                 var teamsKey;
@@ -109,12 +109,11 @@
                     }
                     
                 }
-                console.log(teams);
 
                 var outerWidth  = $(window).width() * 0.7, 
-                    outerHeight = 450;    // includes margins
+                    outerHeight = 450;  
 
-                var margin = {top: 30, right: 20, bottom: 50, left: 80};   // clockwise as in CSS
+                var margin = {top: 30, right: 20, bottom: 50, left: 80};
 
                 var width = outerWidth - margin.left - margin.right,       
                     height = outerHeight - margin.top - margin.bottom;     
@@ -160,7 +159,6 @@
                     .call(xAxis);
 
                 var tooltip = d3.select("body").append("div") 
-                    // .attr("class", "tooltip")       
                     .style("margin", "15px")
                     .style("background-color","#4A4645")
                     .style("color", "white")
@@ -207,6 +205,7 @@
                     .on("mousemove", graphMouseMove)
                     .on("click", clicked);
 
+                // shows the tooltips for images on viz
                 function graphMouseOver(d) {
                     d3.select(this).attr("width", 50);
                     d3.select(this).attr("height", 50);
@@ -219,10 +218,12 @@
                         tooltip.html(teamsMap[teamsKey].fullName + "<br> League: " 
                             + leagues_full[leagues.indexOf(teamsMap[teamsKey].leagueID)] + "<br>Division: " 
                             + divisions_full[divisions.indexOf(teamsMap[teamsKey].divID)] + "<br>Record: " 
-                            + teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses);
+                            + teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses + 
+                            "<br><br><center>*Click to Add*</center>");
                     } 
                 }
 
+                // hides the tooltips
                 function graphMouseOut(d) {
                     d3.select(this).attr("width", 40);
                     d3.select(this).attr("height", 40); 
@@ -233,6 +234,7 @@
                     }
                 }
 
+                // keep the tooltip showing
                 function graphMouseMove(d) {
                     if (d3.select(this).attr("opacity") == 1) {
                         d3.select(this).style("cursor", "pointer");
@@ -243,23 +245,22 @@
                 var info_icon = d3.select("#info")
                     .html("<img class='info-icon' src ='images/info-white.png' />")
                     .on("mouseover", function(d) {d3.select(this).style("cursor", "pointer");})
-                    .on('click',showInstructionModal);
+                    .on('click', showInformation);
 
-                // opens the modal and fills it with instructions and info
-                function showInstructionModal() {
+                // opens the modal and shows viz explanation
+                function showInformation() {
                     modal.style.display = "block";
                     var modalBody = d3.select('.modal-body');
                     modalBody.selectAll('*').remove();
                     modalBody.append('div')
                         .attr('class','text modal-title')
-                        .html(instructions)
+                        .html(information)
                         .enter();
                 }
 
+                // updates the graph on change
                 function updateGraph(teams, year) {
                     var newData = [];
-                    console.log(currYear);
-                    console.log(teams);
                     for (i in allTeams) {
                         if (teams.includes(allTeams[i])) {
                             teamsKey = allTeams[i] + "_" + year;
@@ -271,7 +272,6 @@
                         }
                         
                     }
-                    console.log(data);
 
                     var new_xScale = d3.scaleLinear()                
                                         .domain([0, d3.max(data, function(d) { return d.x;}) + 2])
@@ -315,6 +315,7 @@
                     dropdownChange();
                 }
 
+                // checks which teams should be displayed after one of the dropdowns is changed
                 function dropdownChange() {
                     var newData = [],
                         teams = yearsMap[currYear].teams;
@@ -362,6 +363,8 @@
                 var thead = table.append('thead')
                 var tbody = table.append('tbody');
                 var columns = ["Year", "Team Name", "League", "Division", "Record", "Star Players"]
+                var tableData = [];
+                var dataHelper = [];
                 
                 thead.append('tr')
                     .selectAll('th')
@@ -370,12 +373,13 @@
                     .text(function (column) { return column; })
                     .attr("style", "padding: 10px;");
 
-                var tableData = [];
-                var dataHelper = [];
+                // initial input in table 
+                tempSPlayers = getStarPlayers(Object.keys(teamsMap["CHN_2016"].topPlayers));
+                tableData.push(getTableInput("CHN_2016", tempSPlayers));
+                addTableRow({name: 'CHN', x: 19, y: '19.00', img: 'images/CHN.png'});
 
-                function clicked(d) {
-                    teamsKey = d.name + "_" + currYear;
-                    keys = Object.keys(teamsMap[teamsKey].topPlayers)
+                // finds the full names of star players give player IDs
+                function getStarPlayers(keys) {
                     var starPlayers = "";
                     for (i in keys) {
                         starPlayers += (playersMap[keys[i]].firstName + " " + 
@@ -384,16 +388,59 @@
                             starPlayers += ", ";
                         }
                     }
+                    return starPlayers;
+                }
 
-                    console.log(teamsMap[teamsKey].starValue);
-
-                    input = {"Year": currYear, "TeamName": teamsMap[teamsKey].fullName,
+                // formats the table input 
+                function getTableInput(teamsKey, starPlayers) {
+                    return {"Year": currYear, "TeamName": teamsMap[teamsKey].fullName,
                             "League": leagues_full[leagues.indexOf(teamsMap[teamsKey].leagueID)], 
                             "Division": divisions_full[divisions.indexOf(teamsMap[teamsKey].divID)],
                             "Record": teamsMap[teamsKey].wins + "-" + teamsMap[teamsKey].loses,
                             "StarPlayers": starPlayers};
+                }
 
+                // adds a new row to the table 
+                function addTableRow(d) {
+                    // creates a row for each object in the data
+                    var rows = tbody.selectAll('tr')
+                      .data(tableData)
+                      .enter()
+                      .append('tr')
+                      .on("mouseover", function(d) { d3.select(this).style("cursor", "pointer")})
+                      .on("mousemove", graphMouseMove)
+                      .on("click", function() { console.log(d);
+                                    tableData.splice(dataHelper.indexOf(d), 1);
+                                            dataHelper.splice(dataHelper.indexOf(d), 1);
+                                            d3.select(this).remove();});
+
+                    // creates a cell in each row for each column
+                    var cells = rows.selectAll('td')
+                        .data(function (row) {
+                            return columns.map(function (column) {
+                                columnName = column;
+                                if (column == "Team Name") {
+                                    columnName = "TeamName"
+                                } else if (column == "Star Players") {
+                                    columnName = "StarPlayers"
+                                }
+                              return {column: columnName, value: row[columnName]};
+                            });
+                          })
+                        .enter()
+                        .append('td')
+                        .text(function (d) { return d.value; });
+                }
+
+                // checks if the clicked team in the viz is already in the table, if not
+                // it adds it, otherwise nothing happens
+                function clicked(d) {
+                    teamsKey = d.name + "_" + currYear;
+                    keys = Object.keys(teamsMap[teamsKey].topPlayers)
+                    var starPlayers = getStarPlayers(keys);
+                    input = getTableInput(teamsKey, starPlayers);
                     var repeat = false;
+
                     for (var i in tableData) {
                         if (tableData[i].Year == input.Year && tableData[i].TeamName == input.TeamName) {
                             repeat = true; 
@@ -405,35 +452,7 @@
                         dataHelper.push(d);
                     }
                     
-                    // create a row for each object in the data
-                    var rows = tbody.selectAll('tr')
-                      .data(tableData)
-                      .enter()
-                      .append('tr')
-                      .on("mouseover", function(d) { d3.select(this).style("cursor", "pointer")})
-                      .on("mousemove", graphMouseMove)
-                      .on("click", function() {tableData.splice(dataHelper.indexOf(d), 1);
-                                            dataHelper.splice(dataHelper.indexOf(d), 1);
-                                            d3.select(this).remove();});
-
-                    // create a cell in each row for each column
-                    var cells = rows.selectAll('td')
-                      .data(function (row) {
-                        return columns.map(function (column) {
-                            columnName = column;
-                            if (column == "Team Name") {
-                                columnName = "TeamName"
-                            } else if (column == "Star Players") {
-                                columnName = "StarPlayers"
-                            }
-                          return {column: columnName, value: row[columnName]};
-                        });
-                      })
-                      .enter()
-                      .append('td')
-                        .text(function (d) { return d.value; });
-
-                    return table;
+                    addTableRow(d);
                 }
             };
 
@@ -441,6 +460,7 @@
             makeGraph(initialData, startYear);
         }
 
+        // populates all of the maps with the table information
         function populateMaps(allstars, teams, salaries, batting, pitching, players) {
             populateTeams(teams);
             populatePlayers(players);
@@ -450,6 +470,7 @@
             populateAllStars(allstars);
         }
 
+        // calculates success value for each team
         function findSuccess() {
             for (var year in yearsMap) {
                 var teams = yearsMap[year].teams;
@@ -476,10 +497,7 @@
             }
         }
 
-        // current season star power index vs last five years
-        // rookies can't be a star 
-        // TODO: adjust point values for different skilllevels?
-        // TODO: fix undefined value for name push
+        // finds the star players for each year and calculates star power for each team
         function findStarPlayers() {
             for (var year in yearsMap) {
                 var teams = yearsMap[year].teams;
@@ -506,19 +524,16 @@
                             playersMap[players[i]].years[year].IP > 100) {
                             teamsMap[teamsKey].starValue += 3;
                             teamsMap[teamsKey].topPlayers[players[i]] = 3;
-                            // console.log("excellent");
                         } else if (playersMap[players[i]].years[year].pitcher = true && 
                             playersMap[players[i]].years[year].ERA < 3.00 && 
                             playersMap[players[i]].years[year].IP > 100) {
                             teamsMap[teamsKey].starValue += 2.25;
                             teamsMap[teamsKey].topPlayers[players[i]] = 2.25;
-                            // console.log("great");
                         } else if (playersMap[players[i]].years[year].pitcher = true && 
                             playersMap[players[i]].years[year].ERA < 3.40 && 
                             playersMap[players[i]].years[year].IP > 100) {
                             teamsMap[teamsKey].starValue += 1.5;
                             teamsMap[teamsKey].topPlayers[players[i]] = 1.5;
-                            // console.log("good");
                         }
                         allYearPlayers.push({player: players[i], salary: salaries[i], team: teamsKey});
                     }
@@ -539,6 +554,7 @@
             }
         }
 
+        // finds the top 5% of salaries for a giveen year
         function findTopFivePercent(map) {
             var total = map.length;
             var topFive = (total/100) * 5;

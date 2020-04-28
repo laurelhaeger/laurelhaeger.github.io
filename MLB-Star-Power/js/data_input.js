@@ -121,14 +121,9 @@ function populateSalaries(salaries) {
             playersMap[salaries[i].playerID].years[salaries[i].yearID].salary = salaries[i].salary;
         }
 
-        // TODO: NOT CURRENTLY DEALING WITH DUPLICATES
         if (yearsMap[salaries[i].yearID].players.indexOf(salaries[i].playerID) === -1) {
             yearsMap[salaries[i].yearID].players.push(salaries[i].playerID);
         }
-        // } else {
-        //     console.log("duplicate: " + salaries[i].playerID);
-        //     console.log(salaries[i].yearID);
-        // }
         
         i++;
     }
