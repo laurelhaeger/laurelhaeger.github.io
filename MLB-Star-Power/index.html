@@ -101,10 +101,10 @@
                     imgKey = "images/" + allTeams[i] + ".png"
                     if (teams.includes(allTeams[i])) {
                         teamsKey = allTeams[i] + "_" + year;
-                        data.push({name: allTeams[i], x: teamsMap[teamsKey].starValue, 
+                        data.push({name: allTeams[i], year: currYear, x: teamsMap[teamsKey].starValue, 
                         y: teamsMap[teamsKey].success, img: imgKey});
                     } else {
-                        data.push({name: allTeams[i], x: 0, 
+                        data.push({name: allTeams[i], year: currYear, x: 0, 
                         y: 5, img: imgKey});
                     }
                     
@@ -270,7 +270,7 @@
                             data[i].x = 0;
                             data[i].y = 5;
                         }
-                        
+                        data[i].year = year;
                     }
 
                     var new_xScale = d3.scaleLinear()                
@@ -376,7 +376,8 @@
                 // initial input in table 
                 tempSPlayers = getStarPlayers(Object.keys(teamsMap["CHN_2016"].topPlayers));
                 tableData.push(getTableInput("CHN_2016", tempSPlayers));
-                addTableRow({name: 'CHN', x: 19, y: '19.00', img: 'images/CHN.png'});
+                addTableRow({name: 'CHN', year: '2016', x: 19, y: '19.00', img: 'images/CHN.png'});
+                dataHelper.push("CHN_2016");
 
                 // finds the full names of star players give player IDs
                 function getStarPlayers(keys) {
@@ -409,9 +410,9 @@
                       .append('tr')
                       .on("mouseover", function(d) { d3.select(this).style("cursor", "pointer")})
                       .on("mousemove", graphMouseMove)
-                      .on("click", function() { console.log(d);
-                                    tableData.splice(dataHelper.indexOf(d), 1);
-                                            dataHelper.splice(dataHelper.indexOf(d), 1);
+                      .on("click", function() { tempKey = d.name + "_" + d.year;
+                                            tableData.splice(dataHelper.indexOf(tempKey), 1);
+                                            dataHelper.splice(dataHelper.indexOf(tempKey), 1);
                                             d3.select(this).remove();});
 
                     // creates a cell in each row for each column
@@ -449,7 +450,7 @@
 
                     if (!repeat) {
                         tableData.push(input);
-                        dataHelper.push(d);
+                        dataHelper.push(teamsKey);
                     }
                     
                     addTableRow(d);
